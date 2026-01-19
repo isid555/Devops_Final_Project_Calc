@@ -8,6 +8,10 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    permissions: 
+            contents: read
+            packages: write
+            security-events: write
 
     steps:
     - name: Checkout code
