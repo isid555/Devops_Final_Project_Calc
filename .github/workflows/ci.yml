@@ -107,17 +107,11 @@ jobs:
       # ----------------------------------------------------
     #  Docker Runtime Smoke Test (Node.js)
     # ----------------------------------------------------
-    - name: Run container and smoke test
+    - name: Run container and test
       run: |
-        docker run -d \
-          -p 3000:3000 \
-          -e NODE_ENV=production \
-          --name calculator-api-test \
-          ${{ secrets.DOCKERHUB_USERNAME }}/calculator-api:latest
-
+        docker run -d -p 3000:3000 --name test-app ${{ secrets.DOCKERHUB_USERNAME }}/calculator-api:latest
         sleep 10
         curl -f http://localhost:3000 || exit 1
-
-        docker logs calculator-api-test
-        docker stop calculator-api-test
-        docker rm calculator-api-test
+        docker logs test-app
+        docker stop test-app
+        docker rm test-app
