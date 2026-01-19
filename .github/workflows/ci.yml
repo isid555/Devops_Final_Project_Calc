@@ -111,7 +111,7 @@ jobs:
       run: |
         docker run -d -p 3000:3000 --name test-app ${{ secrets.DOCKERHUB_USERNAME }}/calculator-api:latest
         sleep 10
-        curl -f http://localhost:3000 || exit 1
+        curl -f http://localhost:3000/health || exit 1
         docker logs test-app
         docker stop test-app
         docker rm test-app
