@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: calculator-api
+  labels:
+    app: calculator-api
 spec:
   replicas: 1
   selector:
@@ -13,7 +15,52 @@ spec:
         app: calculator-api
     spec:
       containers:
-        - name: calculator-api
-          image: docker.io/<DOCKERHUB_USERNAME>/calculator-api:latest
-          stdin: true
-          tty: true
+      - name: calculator-api
+        image: docker.io/<DOCKERHUB_USERNAME>/calculator-api:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: PORT
+          value: "3000"
+
+        # ------------------------
+        # Health Checks
+        # ------------------------
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+        # ------------------------
+        # Resource Management
+        # ------------------------
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: calculator-api-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: calculator-api
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 3000
