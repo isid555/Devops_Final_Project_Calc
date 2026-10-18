@@ -1,13 +1,15 @@
 name: Calculator CD
 
 on:
-  workflow_run:
-    workflows: ["Calculator CI"]
-    types: [completed]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Immutable image tag to deploy"
+        required: true
+        type: string
 
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -31,7 +33,10 @@ jobs:
 
       - name: Deploy to Kubernetes
         run: |
-          kubectl apply -f k8/deployment.yml
+          sed "s#image: calculator-api:dev#image: ${{ secrets.IMAGE_REPOSITORY }}:${{ inputs.image_tag }}#" k8/deployment.yml | kubectl apply -f -
 
       - name: Verify Rollout
-        run: kubectl rollout status deployment.apps/calculator-api
+        run: kubectl rollout status deployment.apps/calculator-api --timeout=120s
+
+      - name: Rollback command
+        run: echo 'kubectl rollout undo deployment/calculator-api'
