@@ -1,0 +1,23 @@
+services:
+  calculator:
+    build: .
+    ports: ["3000:3000"]
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318/v1/traces
+    depends_on: [tempo]
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    ports: ["9090:9090"]
+    volumes: ["./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro"]
+  tempo:
+    image: grafana/tempo:2.6.1
+    command: ["-config.file=/etc/tempo.yaml"]
+    ports: ["3200:3200", "4318:4318"]
+    volumes: ["./observability/tempo.yml:/etc/tempo.yaml:ro"]
+  grafana:
+    image: grafana/grafana:11.1.0
+    ports: ["3001:3000"]
+    depends_on: [prometheus, tempo]
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro

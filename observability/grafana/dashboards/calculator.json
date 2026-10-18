@@ -1,0 +1,10 @@
+{
+  "title": "Calculator API",
+  "schemaVersion": 39,
+  "version": 1,
+  "panels": [
+    {"type":"timeseries","title":"Requests per second","gridPos":{"h":8,"w":12,"x":0,"y":0},"targets":[{"expr":"rate(calculator_http_requests_total[1m])","refId":"A"}]},
+    {"type":"timeseries","title":"Errors per second","gridPos":{"h":8,"w":12,"x":12,"y":0},"targets":[{"expr":"rate(calculator_http_errors_total[1m])","refId":"A"}]},
+    {"type":"timeseries","title":"Request latency p95","gridPos":{"h":8,"w":24,"x":0,"y":8},"targets":[{"expr":"histogram_quantile(0.95, sum(rate(calculator_http_request_duration_seconds_bucket[5m])) by (le))","refId":"A"}]}
+  ]
+}

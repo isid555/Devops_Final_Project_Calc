@@ -5,7 +5,14 @@ metadata:
   labels:
     app: calculator-api
 spec:
-  replicas: 1
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  minReadySeconds: 5
+  progressDeadlineSeconds: 60
   selector:
     matchLabels:
       app: calculator-api
@@ -14,9 +21,17 @@ spec:
       labels:
         app: calculator-api
     spec:
+      securityContext:
+        runAsNonRoot: true
       containers:
       - name: calculator-api
-        image: isid555/calculator-api:latest
+        image: calculator-api:dev
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
         ports:
         - containerPort: 3000
         env:
@@ -39,6 +54,12 @@ spec:
             port: 3000
           initialDelaySeconds: 5
           periodSeconds: 5
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          failureThreshold: 30
+          periodSeconds: 2
 
         # ------------------------
         # Resource Management
@@ -57,7 +78,7 @@ kind: Service
 metadata:
   name: calculator-api-service
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: calculator-api
   ports:
